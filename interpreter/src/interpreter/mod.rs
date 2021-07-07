@@ -1,6 +1,6 @@
 mod error;
 mod scanner;
-mod tokens;
+mod token;
 
 use crate::exit_codes;
 use std::{
@@ -79,7 +79,7 @@ impl Interpreter {
 
             run(&line);
 
-            line = String::new(); // kalo ga diginiin ntar dia malah append string
+            line = String::new();
         }
 
         if self.had_error {

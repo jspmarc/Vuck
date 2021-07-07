@@ -1,9 +1,9 @@
 use std::io;
 
-pub fn report(col: i32, whr: &str, message: &str) {
-    eprintln!("[Column {}] Error {}: {}", col, whr, message);
+pub fn report(line: i32, col: i32, whr: &str, message: &str) {
+    eprintln!("[Line {} Column {}] Error {}: {}", line, col, whr, message);
 }
 
-pub fn error(col: i32, message: &str) {
-    report(col, &"".to_string(), message)
+pub fn error(line: i32, col: i32, message: &str) {
+    report(line, col, &"".to_string(), message)
 }

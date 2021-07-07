@@ -21,6 +21,8 @@
 
 1. The program can **read a number** from the user and then push it to the stack
    with `i`
+1. The program can **read an ASCII** and then store it as its integer representation
+   from the user and then push it to the stack with `I`
 1. The program can output a number as an **unsigned integera** with `p`
 1. The program can output a number as its **ASCII value** with `P`
 
@@ -54,6 +56,7 @@
 | `/`          |       |
 | `%`          |       |
 | `i`          |       |
+| `I`          |       |
 | `p`          |       |
 | `P`          |       |
 | `,<mark>`    |       |
