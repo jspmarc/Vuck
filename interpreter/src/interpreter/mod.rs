@@ -2,7 +2,7 @@ mod error;
 mod scanner;
 mod token;
 
-use crate::exit_codes;
+use super::exit_codes;
 use std::{
     fs::File,
     io,

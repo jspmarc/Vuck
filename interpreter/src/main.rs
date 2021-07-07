@@ -2,9 +2,9 @@ mod exit_codes;
 mod interpreter;
 
 use interpreter::Interpreter;
-use std::{env, io, process};
+use std::{env, process};
 
-fn main() -> io::Result<()> {
+fn main() {
     let args = env::args().collect::<Vec<String>>();
     let mut interpreter = Interpreter::new();
     let exit_code = interpreter.interpret(&args);

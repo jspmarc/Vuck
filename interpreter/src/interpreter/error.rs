@@ -1,5 +1,3 @@
-use std::io;
-
 pub fn report(line: i32, col: i32, whr: &str, message: &str) {
     eprintln!("[Line {} Column {}] Error {}: {}", line, col, whr, message);
 }
