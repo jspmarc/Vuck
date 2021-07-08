@@ -1,4 +1,3 @@
-pub mod position;
 pub mod token_type;
 
 use std::{
@@ -14,7 +13,7 @@ pub struct Token {
     literal: Option<Box<dyn Any>>, // cursed awkeowake
     // position: u64, // 0xllllLLLLccccCCCC (l or L is line, c or C is column)
     // ribet kalo nyimpen kolom jg, mager
-    line: usize,
+    position: (usize, usize),
 }
 
 impl Token {
@@ -23,6 +22,7 @@ impl Token {
         lexeme: String,
         literal_opt: Option<Box<dyn Any>>,
         line: usize,
+        column: usize,
     ) -> io::Result<Self> {
         if let Some(literal) = literal_opt {
             let literal_id = (&*literal).type_id();
@@ -39,14 +39,14 @@ impl Token {
                 tok_type,
                 lexeme,
                 literal: Some(literal),
-                line,
+                position: (line, column),
             })
         } else {
             Ok(Self {
                 tok_type,
                 lexeme,
                 literal: None,
-                line,
+                position: (line, column),
             })
         }
     }

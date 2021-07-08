@@ -9,7 +9,13 @@ pub struct Scanner {
     start: usize,
     current: usize,
     line: usize,
+    column: usize,
 }
+
+const RESERVED_CHARACTERS: &[char] = &[
+    'l', 'h', 'j', 'k', '+', '-', '*', '/', '%', 'i', 'I', 'p', 'P', ',', 'F', ' ', '\t', '\r',
+    '\n',
+];
 
 impl Scanner {
     pub fn new(source: &str) -> Self {
@@ -19,6 +25,7 @@ impl Scanner {
             start: 0,
             current: 0,
             line: 1,
+            column: 1,
         }
     }
 }
@@ -34,11 +41,13 @@ impl Scanner {
             };
         }
 
+        // End of file
         let tok = match Token::new(
             TokenType::Eof,
             ":q".to_string(),
             Some(Box::new(":q")),
             self.line,
+            self.column,
         ) {
             Ok(tok) => tok,
             Err(err) => return Err(err),
@@ -78,8 +87,16 @@ impl Scanner {
                     self.add_token(TokenType::LoopMark, Some(Box::new(res)))
                 }
             }
-            ' ' | '\t' | '\r' | '\n' => Ok(()),
-            _ => Ok(()),
+            ' ' | '\t' | '\r' => Ok(()),
+            '\n' => {
+                self.line += 1;
+                self.column += 1;
+                Ok(())
+            }
+            _ => Err(io::Error::new(
+                io::ErrorKind::Other,
+                "Karakter/perintah tidak valid",
+            )),
         };
 
         if let Err(e) = res {
@@ -97,12 +114,19 @@ impl Scanner {
 
     fn advance(&mut self) -> char {
         self.current += 1;
+        self.column += 1;
         self.source[self.current - 1]
     }
 
     fn add_token(&mut self, tok_t: TokenType, literal: Option<Box<dyn Any>>) -> io::Result<()> {
         let text = self.source[self.start..self.current].to_vec();
-        let tok = match Token::new(tok_t, String::from_iter(text), literal, self.line) {
+        let tok = match Token::new(
+            tok_t,
+            String::from_iter(text),
+            literal,
+            self.line,
+            self.column,
+        ) {
             Ok(tok) => tok,
             Err(err) => return Err(err),
         };
@@ -120,24 +144,31 @@ impl Scanner {
         }
     }
 
-    fn is_digit(c: char) -> bool {
-        ('0'..='9').contains(&c)
-    }
-
     fn number(&mut self) -> io::Result<()> {
-        let mut calon_angka = String::new();
-        let mut c = self.advance();
-
-        while c != '.' {
-            calon_angka.push(c);
-            c = self.advance();
+        let first_char = self.peek();
+        if first_char != '-' && !is_digit(first_char) {
+            return Err(io::Error::new(
+                io::ErrorKind::Other,
+                "Harusnya angka atau '-'",
+            ));
+        } else {
+            self.advance();
         }
 
-        // c == '.'
-        self.current += 1;
+        while is_digit(self.peek()) {
+            self.advance();
+        }
 
-        // tambahin dlu token angkanya
+        let num = self.source[self.start..self.current]
+            .iter()
+            .cloned()
+            .collect::<String>()
+            .parse::<i32>();
 
-        Ok(())
+        self.add_token(TokenType::Number, Some(Box::new(num)))
     }
+}
+
+fn is_digit(c: char) -> bool {
+    ('0'..='9').contains(&c)
 }

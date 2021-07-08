@@ -1,4 +1,3 @@
-mod error;
 mod scanner;
 mod token;
 
@@ -112,6 +111,16 @@ impl Interpreter {
         }
 
         Ok(())
+    }
+}
+
+impl Interpreter {
+    pub fn error(line: i32, col: i32, message: &str) {
+        Interpreter::report(line, col, &"".to_string(), message)
+    }
+
+    pub fn report(line: i32, col: i32, whr: &str, message: &str) {
+        eprintln!("[Line {} Column {}] Error {}: {}", line, col, whr, message);
     }
 }
 
