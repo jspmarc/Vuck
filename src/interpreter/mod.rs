@@ -65,7 +65,7 @@ impl Interpreter {
                 break;
             }
 
-            source.push_str(line.trim());
+            source.push_str(&line);
             line = String::new();
         }
 
@@ -73,8 +73,6 @@ impl Interpreter {
             self.had_error = true;
             return Err(err);
         }
-
-        println!("{:?}", source);
 
         if self.had_error {
             return Err(io::Error::new(ErrorKind::Other, "Some error"));

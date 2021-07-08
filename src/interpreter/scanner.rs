@@ -9,6 +9,7 @@ pub struct Scanner {
     start: usize,
     current: usize,
     line: usize,
+    column: usize,
 }
 
 // const RESERVED_CHARACTERS: &[char] = &[
@@ -24,6 +25,7 @@ impl Scanner {
             start: 0,
             current: 0,
             line: 1,
+            column: 1,
         }
     }
 }
@@ -72,9 +74,8 @@ impl Scanner {
             ',' => self.add_token(TokenType::LoopStart, None),
             'F' => self.add_token(TokenType::LoopEnd, None),
             ':' => {
-                if self.peek_next() == 'q' {
+                if self.peek() == 'q' {
                     self.advance();
-                    self.start = self.current;
 
                     self.add_token(TokenType::Eof, Some(Box::new(":q")))
                 } else {
@@ -90,6 +91,7 @@ impl Scanner {
             ' ' | '\t' | '\r' => Ok(()),
             '\n' => {
                 self.line += 1;
+                self.column = 1;
                 Ok(())
             }
             _ => Err(io::Error::new(
@@ -113,6 +115,7 @@ impl Scanner {
 
     fn advance(&mut self) -> char {
         self.current += 1;
+        self.column += 1;
         self.source[self.current - 1]
     }
 
@@ -122,7 +125,7 @@ impl Scanner {
             .cloned()
             .collect::<String>();
 
-        let tok = match Token::new(tok_type, lexeme, literal, self.line, self.start + 1) {
+        let tok = match Token::new(tok_type, lexeme, literal, self.line, self.column - 1) {
             Ok(tok) => tok,
             Err(err) => return Err(err),
         };
@@ -140,17 +143,8 @@ impl Scanner {
         }
     }
 
-    fn peek_next(&self) -> char {
-        if (self.current + 1) >= self.source.len() {
-            '\0'
-        } else {
-            self.source[self.current + 1]
-        }
-    }
-
     fn number(&mut self) -> io::Result<()> {
         let first_char = self.peek();
-
         if first_char != '-' && !is_digit(first_char) {
             return Err(io::Error::new(
                 io::ErrorKind::Other,
