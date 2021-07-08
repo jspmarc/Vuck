@@ -10,9 +10,7 @@ use token_type::TokenType;
 pub struct Token {
     tok_type: TokenType,
     lexeme: String,
-    literal: Option<Box<dyn Any>>, // cursed awkeowake
-    // position: u64, // 0xllllLLLLccccCCCC (l or L is line, c or C is column)
-    // ribet kalo nyimpen kolom jg, mager
+    literal: Option<Box<dyn Any>>,
     position: (usize, usize),
 }
 
@@ -28,10 +26,10 @@ impl Token {
             let literal_id = (&*literal).type_id();
 
             // type checking
-            if literal_id != TypeId::of::<i32>() && literal_id != TypeId::of::<char>() {
+            if literal_id != TypeId::of::<i32>() && literal_id != TypeId::of::<&str>() {
                 return Err(io::Error::new(
                     io::ErrorKind::Other,
-                    "literal harus sebuah karakter atau signed 4 bytes integer",
+                    "literal harus sebuah borrowed str atau signed 4 bytes integer",
                 ));
             }
 

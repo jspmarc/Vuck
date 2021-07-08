@@ -1,5 +1,5 @@
 use super::token::{token_type::TokenType, Token};
-use std::{any::Any, io, iter::FromIterator};
+use std::{any::Any, io};
 
 pub struct Scanner {
     source: Vec<char>,
@@ -9,13 +9,12 @@ pub struct Scanner {
     start: usize,
     current: usize,
     line: usize,
-    column: usize,
 }
 
-const RESERVED_CHARACTERS: &[char] = &[
-    'l', 'h', 'j', 'k', '+', '-', '*', '/', '%', 'i', 'I', 'p', 'P', ',', 'F', ' ', '\t', '\r',
-    '\n',
-];
+// const RESERVED_CHARACTERS: &[char] = &[
+//     'l', 'h', 'j', 'k', '+', '-', '*', '/', '%', 'i', 'I', 'p', 'P', ':', 'q', ',', 'F', '.', 'T',
+//     '|', ' ', '\t', '\r', '\n',
+// ];
 
 impl Scanner {
     pub fn new(source: &str) -> Self {
@@ -25,7 +24,6 @@ impl Scanner {
             start: 0,
             current: 0,
             line: 1,
-            column: 1,
         }
     }
 }
@@ -42,17 +40,9 @@ impl Scanner {
         }
 
         // End of file
-        let tok = match Token::new(
-            TokenType::Eof,
-            ":q".to_string(),
-            Some(Box::new(":q")),
-            self.line,
-            self.column,
-        ) {
-            Ok(tok) => tok,
-            Err(err) => return Err(err),
-        };
-        self.tokens.push(tok);
+        if let Err(err) = self.add_token(TokenType::Eof, Some(Box::new(":q"))) {
+            return Err(err);
+        }
 
         Ok(self.tokens.as_slice())
     }
@@ -66,6 +56,7 @@ impl Scanner {
                 if let Err(e) = self.add_token(TokenType::StackPush, None) {
                     Err(e)
                 } else {
+                    self.start = self.current;
                     self.number()
                 }
             }
@@ -79,18 +70,26 @@ impl Scanner {
             'p' => self.add_token(TokenType::WriteNumber, None),
             'P' => self.add_token(TokenType::WriteAscii, None),
             ',' => self.add_token(TokenType::LoopStart, None),
-            'F' => {
-                if let Err(e) = self.add_token(TokenType::LoopEnd, None) {
-                    Err(e)
+            'F' => self.add_token(TokenType::LoopEnd, None),
+            ':' => {
+                if self.peek_next() == 'q' {
+                    self.advance();
+                    self.start = self.current;
+
+                    self.add_token(TokenType::Eof, Some(Box::new(":q")))
                 } else {
-                    let res = self.advance();
-                    self.add_token(TokenType::LoopMark, Some(Box::new(res)))
+                    Err(io::Error::new(
+                        io::ErrorKind::Other,
+                        "Karakter/perintah tidak valid",
+                    ))
                 }
             }
+            '.' => self.add_token(TokenType::ConditionalStart, None),
+            'T' => self.add_token(TokenType::ConditionalEnd, None),
+            '|' => self.add_token(TokenType::ConditionalElse, None),
             ' ' | '\t' | '\r' => Ok(()),
             '\n' => {
                 self.line += 1;
-                self.column += 1;
                 Ok(())
             }
             _ => Err(io::Error::new(
@@ -114,19 +113,16 @@ impl Scanner {
 
     fn advance(&mut self) -> char {
         self.current += 1;
-        self.column += 1;
         self.source[self.current - 1]
     }
 
-    fn add_token(&mut self, tok_t: TokenType, literal: Option<Box<dyn Any>>) -> io::Result<()> {
-        let text = self.source[self.start..self.current].to_vec();
-        let tok = match Token::new(
-            tok_t,
-            String::from_iter(text),
-            literal,
-            self.line,
-            self.column,
-        ) {
+    fn add_token(&mut self, tok_type: TokenType, literal: Option<Box<dyn Any>>) -> io::Result<()> {
+        let lexeme = self.source[self.start..self.current]
+            .iter()
+            .cloned()
+            .collect::<String>();
+
+        let tok = match Token::new(tok_type, lexeme, literal, self.line, self.start + 1) {
             Ok(tok) => tok,
             Err(err) => return Err(err),
         };
@@ -144,8 +140,17 @@ impl Scanner {
         }
     }
 
+    fn peek_next(&self) -> char {
+        if (self.current + 1) >= self.source.len() {
+            '\0'
+        } else {
+            self.source[self.current + 1]
+        }
+    }
+
     fn number(&mut self) -> io::Result<()> {
         let first_char = self.peek();
+
         if first_char != '-' && !is_digit(first_char) {
             return Err(io::Error::new(
                 io::ErrorKind::Other,
@@ -159,11 +164,15 @@ impl Scanner {
             self.advance();
         }
 
-        let num = self.source[self.start..self.current]
+        let num = match self.source[self.start..self.current]
             .iter()
             .cloned()
             .collect::<String>()
-            .parse::<i32>();
+            .parse::<i32>()
+        {
+            Ok(num) => num,
+            Err(_) => return Err(io::Error::new(io::ErrorKind::Other, "Gagal membaca angka")),
+        };
 
         self.add_token(TokenType::Number, Some(Box::new(num)))
     }

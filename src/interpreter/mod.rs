@@ -98,9 +98,9 @@ impl Interpreter {
             }
 
             // sementara :q\n dulu
-            if line.eq(":q\n") {
-                return Ok(());
-            }
+            // if line.eq(":q\n") {
+            //     return Ok(());
+            // }
 
             if let Err(err) = run(line.as_str()) {
                 return Err(err);

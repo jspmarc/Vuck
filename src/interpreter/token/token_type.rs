@@ -25,9 +25,13 @@ pub enum TokenType {
     LoopStart,
     LoopEnd,
 
+    // conditionals
+    ConditionalStart,
+    ConditionalEnd,
+    ConditionalElse,
+
     // literal
     Number,
-    LoopMark,
 
     Eof, // :q
 }

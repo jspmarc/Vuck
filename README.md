@@ -8,7 +8,7 @@
    - `l` to move to the right
    - `h` to move to the left
 1. We can pop and push values to the stack
-   - `k<number>.` to push `<number>` (moving the stack pointer up), note the `.`
+   - `k<number>` to push `<number>` (moving the stack pointer up), note the `.`
    - `j` to pop (moving the stack pointer down)
 1. **End of program is denoted by `:q`**
 1. Mathematical operation to the top of stack value is done by:
@@ -32,18 +32,31 @@
 
    Only the **first byte** will be taken out of the 4 byte to print as ASCII.
 
-1. Loops (and conditionals):
+1. Loops:
 
    1. Mark the start of a loop with:
       ```
-      ,<mark>
+      ,
       ```
    2. The end of loop is:
       ```
-      F<mark>
+      F
       ```
-      - `<mark>` is **a single character** not used for instruction
       - The loop will end if the top of the stack is 0
+
+1. Conditionals:
+   1. Mark the start of the conditional with:
+      ```
+      .
+      ```
+   1. Mark the end of the conditional with:
+      ```
+      T
+      ```
+   1. Mark the else branch with:
+      ```
+      |
+      ```
 
 ## Used characters
 
