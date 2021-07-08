@@ -3,18 +3,12 @@ mod scanner;
 mod token;
 
 use super::exit_codes;
+use scanner::Scanner;
 use std::{
     fs::File,
     io,
     io::{prelude::*, ErrorKind},
-    result::Result,
 };
-
-#[derive(Debug)]
-pub enum ErrorType {
-    IOError(io::Error),
-    InterpreterError(String),
-}
 
 pub struct Interpreter {
     had_error: bool,
@@ -38,20 +32,14 @@ impl Interpreter {
             },
             2 => match self.run_file(&args[1]) {
                 Ok(_) => exit_codes::EX_OK,
-                Err(err) => match err {
-                    ErrorType::IOError(e) => match e.kind() {
-                        ErrorKind::NotFound => {
-                            eprintln!("File {} tidak ditemukan", args[1]);
-                            exit_codes::EX_NOINPUT
-                        }
-                        others => {
-                            eprintln!("Terjadi kesalahan saat membaca file:\n{:#?}.", others);
-                            exit_codes::EX_IOERR
-                        }
-                    },
-                    ErrorType::InterpreterError(msg) => {
-                        eprintln!("{}", msg);
-                        exit_codes::EX_SOFTWARE
+                Err(err) => match err.kind() {
+                    ErrorKind::NotFound => {
+                        eprintln!("File {} tidak ditemukan", args[1]);
+                        exit_codes::EX_NOINPUT
+                    }
+                    others => {
+                        eprintln!("Terjadi kesalahan saat membaca file:\n{:#?}.", others);
+                        exit_codes::EX_IOERR
                     }
                 },
             },
@@ -64,10 +52,10 @@ impl Interpreter {
 }
 
 impl Interpreter {
-    fn run_file(&self, file_path: &str) -> Result<(), ErrorType> {
+    fn run_file(&mut self, file_path: &str) -> io::Result<()> {
         let f = match File::open(file_path) {
             Ok(f) => f,
-            Err(err) => return Err(ErrorType::IOError((err))),
+            Err(err) => return Err(err),
         };
         let mut buf_reader = io::BufReader::new(f);
         let mut line = String::new();
@@ -77,30 +65,33 @@ impl Interpreter {
                 break;
             }
 
-            run(&line);
+            if let Err(err) = run(line.as_str()) {
+                self.had_error = true;
+                return Err(err);
+            }
 
             line = String::new();
         }
 
         if self.had_error {
-            return Err(ErrorType::InterpreterError("Some error".to_string()));
+            return Err(io::Error::new(ErrorKind::Other, "Some error"));
         }
 
         Ok(())
     }
 
     #[allow(unreachable_code)]
-    fn run_repl(&mut self) -> Result<(), ErrorType> {
+    fn run_repl(&mut self) -> io::Result<()> {
         let mut line = String::new();
         let stdin = io::stdin();
 
         loop {
             print!("> ");
             if let Err(err) = io::stdout().flush() {
-                return Err(ErrorType::IOError(err));
+                return Err(err);
             }
             if let Err(err) = stdin.read_line(&mut line) {
-                return Err(ErrorType::IOError(err));
+                return Err(err);
             }
 
             // sementara :q\n dulu
@@ -108,7 +99,9 @@ impl Interpreter {
                 return Ok(());
             }
 
-            run(line.as_str());
+            if let Err(err) = run(line.as_str()) {
+                return Err(err);
+            }
 
             self.had_error = false;
             line = "".to_string();
@@ -118,16 +111,18 @@ impl Interpreter {
     }
 }
 
-fn run(source: &str) {
+fn run(source: &str) -> io::Result<()> {
+    let mut scanner = Scanner::new(source);
     println!("{:?}", source);
 
-    // private static void run(String source) {
-    // Scanner scanner = new Scanner(source);
-    // List<Token> tokens = scanner.scanTokens();
+    let toks = match scanner.scan_tokens() {
+        Ok(toks) => toks,
+        Err(err) => return Err(err),
+    };
 
-    // // For now, just print the tokens.
-    // for (Token token : tokens) {
-    //     System.out.println(token);
-    // }
-    // }
+    for tok in toks {
+        println!("{:#?}", tok);
+    }
+
+    Ok(())
 }
