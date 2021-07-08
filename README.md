@@ -1,7 +1,9 @@
 # Vuck
+
 1. 1D, like brainfuck
 1. The stack's elements are of `signed int` size (4 byte)
-1. The stack's initial element is only 1 and it's set to 0
+1. The stack's initially empty. Trying to access the stack/do operations on it will cause the
+   interpreter to error.
 1. Pointer can go sideways only
    - `l` to move to the right
    - `h` to move to the left
@@ -17,8 +19,9 @@
    - `/` divide the first by the second stack value (e.g. `first / second`)
    - `%` modulo the first with the second stack value (e.g. `first % second`)
 
-   Result of the mathematical operation is pushed onto the stack, then the operands of
-   the stack will be popped from the stack
+   > - Result of the mathematical operation is pushed onto the stack, then the operands of
+   >   the stack will be popped from the stack
+   > - If the number of operands in the stack is not enough, the interpreter will error out
 
 1. The program can **read a number** from the user and then push it to the stack
    with `i`

@@ -1,33 +1,33 @@
 #[derive(Debug)]
 pub enum TokenType {
     // pointer movement
-    POINTER_LEFT,
-    POINTER_RIGHT,
+    PointerLeft,
+    PointerRight,
 
     // stack push and pop
-    STACK_PUSH,
-    STACK_POP,
+    StackPush,
+    StackPop,
 
     // input and output
-    READ_NUMBER,
-    READ_ASCII,
-    WRITE_NUMBER,
-    WRITE_ASCII,
+    ReadNumber,
+    ReadAscii,
+    WriteNumber,
+    WriteAscii,
 
     // Mathematical operation
-    ADD,
-    MULTIPLY,
-    SUBTRACT,
-    DIVIDE,
-    MODULO,
+    MathAdd,
+    MathMultiply,
+    MathSubtract,
+    MathDivide,
+    MathModulo,
 
-    // conditional
-    CONDITIONAL_START,
-    CONDITIONAL_END,
+    // loop
+    LoopStart,
+    LoopEnd,
 
     // literal
-    NUMBER,
-    CONDITIONAL_MARK,
+    Number,
+    LoopMark,
 
-    EOF, // :q
+    Eof, // :q
 }

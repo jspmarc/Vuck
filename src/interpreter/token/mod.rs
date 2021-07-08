@@ -28,10 +28,10 @@ impl Token {
             let literal_id = (&*literal).type_id();
 
             // type checking
-            if literal_id != TypeId::of::<i32>() && literal_id != TypeId::of::<&str>() {
+            if literal_id != TypeId::of::<i32>() && literal_id != TypeId::of::<char>() {
                 return Err(io::Error::new(
                     io::ErrorKind::Other,
-                    "literal harus string atau signed 4 bytes integer",
+                    "literal harus sebuah karakter atau signed 4 bytes integer",
                 ));
             }
 

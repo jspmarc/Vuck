@@ -35,7 +35,7 @@ impl Scanner {
         }
 
         let tok = match Token::new(
-            TokenType::EOF,
+            TokenType::Eof,
             ":q".to_string(),
             Some(Box::new(":q")),
             self.line,
@@ -49,8 +49,44 @@ impl Scanner {
     }
 
     fn scan_token(&mut self) -> io::Result<()> {
-        match self.advance() {};
-        Ok(())
+        let res = match self.advance() {
+            'l' => self.add_token(TokenType::PointerRight, None),
+            'h' => self.add_token(TokenType::PointerLeft, None),
+            'j' => self.add_token(TokenType::StackPop, None),
+            'k' => {
+                if let Err(e) = self.add_token(TokenType::StackPush, None) {
+                    Err(e)
+                } else {
+                    self.number()
+                }
+            }
+            '+' => self.add_token(TokenType::MathAdd, None),
+            '-' => self.add_token(TokenType::MathSubtract, None),
+            '*' => self.add_token(TokenType::MathMultiply, None),
+            '/' => self.add_token(TokenType::MathDivide, None),
+            '%' => self.add_token(TokenType::MathModulo, None),
+            'i' => self.add_token(TokenType::ReadNumber, None),
+            'I' => self.add_token(TokenType::ReadAscii, None),
+            'p' => self.add_token(TokenType::WriteNumber, None),
+            'P' => self.add_token(TokenType::WriteAscii, None),
+            ',' => self.add_token(TokenType::LoopStart, None),
+            'F' => {
+                if let Err(e) = self.add_token(TokenType::LoopEnd, None) {
+                    Err(e)
+                } else {
+                    let res = self.advance();
+                    self.add_token(TokenType::LoopMark, Some(Box::new(res)))
+                }
+            }
+            ' ' | '\t' | '\r' | '\n' => Ok(()),
+            _ => Ok(()),
+        };
+
+        if let Err(e) = res {
+            Err(e)
+        } else {
+            Ok(())
+        }
     }
 }
 
@@ -72,6 +108,35 @@ impl Scanner {
         };
 
         self.tokens.push(tok);
+
+        Ok(())
+    }
+
+    fn peek(&self) -> char {
+        if self.is_at_end() {
+            '\0'
+        } else {
+            self.source[self.current]
+        }
+    }
+
+    fn is_digit(c: char) -> bool {
+        ('0'..='9').contains(&c)
+    }
+
+    fn number(&mut self) -> io::Result<()> {
+        let mut calon_angka = String::new();
+        let mut c = self.advance();
+
+        while c != '.' {
+            calon_angka.push(c);
+            c = self.advance();
+        }
+
+        // c == '.'
+        self.current += 1;
+
+        // tambahin dlu token angkanya
 
         Ok(())
     }
