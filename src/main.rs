@@ -9,5 +9,5 @@ fn main() {
     let mut interpreter = Interpreter::new();
     let exit_code = interpreter.interpret(&args);
 
-    process::exit(exit_code);
+    process::exit(exit_code as i32);
 }

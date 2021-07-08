@@ -20,7 +20,7 @@ impl Interpreter {
 }
 
 impl Interpreter {
-    pub fn interpret(&mut self, args: &[String]) -> i32 {
+    pub fn interpret(&mut self, args: &[String]) -> i8 {
         match args.len() {
             1 => match self.run_repl() {
                 Ok(_) => exit_codes::EX_OK,
