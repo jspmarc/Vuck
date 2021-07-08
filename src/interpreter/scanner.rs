@@ -1,5 +1,5 @@
 use super::token::{token_type::TokenType, Token};
-use std::{any::Any, io};
+use std::io;
 
 pub struct Scanner {
     source: Vec<char>,
@@ -42,7 +42,7 @@ impl Scanner {
         }
 
         // End of file
-        if let Err(err) = self.add_token(TokenType::Eof, Some(Box::new(":q"))) {
+        if let Err(err) = self.add_token(TokenType::Eof, None) {
             return Err(err);
         }
 
@@ -77,7 +77,7 @@ impl Scanner {
                 if self.peek() == 'q' {
                     self.advance();
 
-                    self.add_token(TokenType::Eof, Some(Box::new(":q")))
+                    self.add_token(TokenType::Eof, None)
                 } else {
                     Err(io::Error::new(
                         io::ErrorKind::Other,
@@ -119,7 +119,7 @@ impl Scanner {
         self.source[self.current - 1]
     }
 
-    fn add_token(&mut self, tok_type: TokenType, literal: Option<Box<dyn Any>>) -> io::Result<()> {
+    fn add_token(&mut self, tok_type: TokenType, literal: Option<i32>) -> io::Result<()> {
         let lexeme = self.source[self.start..self.current]
             .iter()
             .cloned()
@@ -168,7 +168,7 @@ impl Scanner {
             Err(_) => return Err(io::Error::new(io::ErrorKind::Other, "Gagal membaca angka")),
         };
 
-        self.add_token(TokenType::Number, Some(Box::new(num)))
+        self.add_token(TokenType::Number, Some(num))
     }
 }
 
