@@ -14,9 +14,6 @@ pub enum TokenType {
     WRITE_NUMBER,
     WRITE_ASCII,
 
-    // literal
-    NUMBER,
-
     // Mathematical operation
     ADD,
     MULTIPLY,
@@ -27,6 +24,9 @@ pub enum TokenType {
     // conditional
     CONDITIONAL_START,
     CONDITIONAL_END,
+
+    // literal
+    NUMBER,
     CONDITIONAL_MARK,
 
     EOF, // :q

@@ -59,19 +59,23 @@ impl Interpreter {
         };
         let mut buf_reader = io::BufReader::new(f);
         let mut line = String::new();
+        let mut source = String::new();
 
         while let Ok(len) = buf_reader.read_line(&mut line) {
             if len == 0 {
                 break;
             }
 
-            if let Err(err) = run(line.as_str()) {
-                self.had_error = true;
-                return Err(err);
-            }
-
+            source.push_str(line.trim());
             line = String::new();
         }
+
+        if let Err(err) = run(&source) {
+            self.had_error = true;
+            return Err(err);
+        }
+
+        println!("{:?}", source);
 
         if self.had_error {
             return Err(io::Error::new(ErrorKind::Other, "Some error"));
@@ -113,7 +117,6 @@ impl Interpreter {
 
 fn run(source: &str) -> io::Result<()> {
     let mut scanner = Scanner::new(source);
-    println!("{:?}", source);
 
     let toks = match scanner.scan_tokens() {
         Ok(toks) => toks,
