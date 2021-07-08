@@ -1,3 +1,4 @@
+# Vuck
 1. 1D, like brainfuck
 1. The stack's elements are of `signed int` size (4 byte)
 1. The stack's initial element is only 1 and it's set to 0
