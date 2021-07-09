@@ -1,21 +1,28 @@
+extern crate lazy_static;
+
 mod scanner;
 mod token;
+mod runner;
 
 use super::exit_codes;
-use scanner::Scanner;
+use runner::run;
+use lazy_static::lazy_static;
 use std::{
     fs::File,
     io,
     io::{prelude::*, ErrorKind},
+    sync::atomic::{AtomicBool, Ordering},
 };
 
-pub struct Interpreter {
-    had_error: bool,
+lazy_static! {
+    static ref HAD_ERROR: AtomicBool = AtomicBool::new(false);
 }
+
+pub struct Interpreter {}
 
 impl Interpreter {
     pub fn new() -> Self {
-        Self { had_error: false }
+        Self {}
     }
 }
 
@@ -33,11 +40,11 @@ impl Interpreter {
                 Ok(_) => exit_codes::EX_OK,
                 Err(err) => match err.kind() {
                     ErrorKind::NotFound => {
-                        eprintln!("File {} tidak ditemukan", args[1]);
+                        eprintln!("File {} tidak ditemukan", &args[1]);
                         exit_codes::EX_NOINPUT
                     }
-                    others => {
-                        eprintln!("Terjadi kesalahan saat membaca file:\n{:#?}.", others);
+                    _ => {
+                        eprintln!("Terjadi kesalahan saat membaca file:\n{}.", err);
                         exit_codes::EX_IOERR
                     }
                 },
@@ -69,13 +76,10 @@ impl Interpreter {
             line = String::new();
         }
 
-        if let Err(err) = run(&source) {
-            self.had_error = true;
-            return Err(err);
-        }
+        run(&source).unwrap();
 
-        if self.had_error {
-            return Err(io::Error::new(ErrorKind::Other, "Some error"));
+        if HAD_ERROR.load(Ordering::SeqCst) {
+            return Err(io::Error::new(ErrorKind::Other, "Gagal interpretasi file."));
         }
 
         Ok(())
@@ -95,16 +99,11 @@ impl Interpreter {
                 return Err(err);
             }
 
-            // sementara :q\n dulu
-            // if line.eq(":q\n") {
-            //     return Ok(());
-            // }
-
             if let Err(err) = run(line.as_str()) {
                 return Err(err);
             }
 
-            self.had_error = false;
+            HAD_ERROR.fetch_and(false, Ordering::SeqCst);
             line = "".to_string();
         }
 
@@ -113,26 +112,12 @@ impl Interpreter {
 }
 
 impl Interpreter {
-    pub fn error(line: i32, col: i32, message: &str) {
-        Interpreter::report(line, col, &"".to_string(), message)
-    }
-
-    pub fn report(line: i32, col: i32, whr: &str, message: &str) {
+    pub fn report(line: usize, col: usize, whr: &str, message: &str) {
+        HAD_ERROR.fetch_or(true, Ordering::SeqCst);
         eprintln!("[Line {} Column {}] Error {}: {}", line, col, whr, message);
     }
-}
 
-fn run(source: &str) -> io::Result<()> {
-    let mut scanner = Scanner::new(source);
-
-    let toks = match scanner.scan_tokens() {
-        Ok(toks) => toks,
-        Err(err) => return Err(err),
-    };
-
-    for tok in toks {
-        println!("{:#?}", tok);
+    pub fn error(line: usize, col: usize, message: &str) {
+        Interpreter::report(line, col, &"".to_string(), message)
     }
-
-    Ok(())
 }

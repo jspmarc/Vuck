@@ -1,4 +1,9 @@
-use super::token::{token_type::TokenType, Token};
+// error di sini buat handle error dari pembuatan token/penambahan token
+
+use super::{
+    token::{token_type::TokenType, Token},
+    Interpreter,
+};
 use std::io;
 
 pub struct Scanner {
@@ -25,7 +30,7 @@ impl Scanner {
             start: 0,
             current: 0,
             line: 1,
-            column: 1,
+            column: 0,
         }
     }
 }
@@ -79,10 +84,8 @@ impl Scanner {
 
                     self.add_token(TokenType::Eof, None)
                 } else {
-                    Err(io::Error::new(
-                        io::ErrorKind::Other,
-                        "Karakter/perintah tidak valid",
-                    ))
+                    Interpreter::error(self.line, self.column, "Karakter/perintah invalid.");
+                    Ok(())
                 }
             }
             '.' => self.add_token(TokenType::ConditionalStart, None),
@@ -94,10 +97,10 @@ impl Scanner {
                 self.column = 1;
                 Ok(())
             }
-            _ => Err(io::Error::new(
-                io::ErrorKind::Other,
-                "Karakter/perintah tidak valid",
-            )),
+            _ => {
+                Interpreter::error(self.line, self.column, "Karakter/perintah invalid");
+                Ok(())
+            }
         };
 
         if let Err(e) = res {
@@ -125,7 +128,7 @@ impl Scanner {
             .cloned()
             .collect::<String>();
 
-        let tok = match Token::new(tok_type, lexeme, literal, self.line, self.column - 1) {
+        let tok = match Token::new(tok_type, lexeme, literal, self.line, self.column) {
             Ok(tok) => tok,
             Err(err) => return Err(err),
         };
@@ -146,10 +149,8 @@ impl Scanner {
     fn number(&mut self) -> io::Result<()> {
         let first_char = self.peek();
         if first_char != '-' && !is_digit(first_char) {
-            return Err(io::Error::new(
-                io::ErrorKind::Other,
-                "Harusnya angka atau '-'",
-            ));
+            Interpreter::error(self.line, self.column + 1, "Harusnya angka atau '-'");
+            return Ok(());
         } else {
             self.advance();
         }
