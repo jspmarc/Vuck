@@ -15,6 +15,9 @@ pub struct Scanner {
     current: usize,
     line: usize,
     column: usize,
+
+    // stop pas udah nge-scan eof
+    has_seen_eof: bool,
 }
 
 // const RESERVED_CHARACTERS: &[char] = &[
@@ -31,6 +34,7 @@ impl Scanner {
             current: 0,
             line: 1,
             column: 0,
+            has_seen_eof: false,
         }
     }
 }
@@ -46,9 +50,8 @@ impl Scanner {
             };
         }
 
-        // End of file
-        if let Err(err) = self.add_token(TokenType::Eof, None) {
-            return Err(err);
+        if self.is_at_end() && !self.has_seen_eof {
+            Interpreter::error(self.line, self.column, "Membutuhkan :q")
         }
 
         Ok(self.tokens.as_slice())
@@ -81,7 +84,7 @@ impl Scanner {
             ':' => {
                 if self.peek() == 'q' {
                     self.advance();
-
+                    self.has_seen_eof = true;
                     self.add_token(TokenType::Eof, None)
                 } else {
                     Interpreter::error(self.line, self.column, "Karakter/perintah invalid.");
@@ -113,7 +116,7 @@ impl Scanner {
 
 impl Scanner {
     fn is_at_end(&self) -> bool {
-        self.current >= self.source.len()
+        self.current >= self.source.len() || self.has_seen_eof
     }
 
     fn advance(&mut self) -> char {

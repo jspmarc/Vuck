@@ -1,12 +1,12 @@
 extern crate lazy_static;
 
+mod runner;
 mod scanner;
 mod token;
-mod runner;
 
 use super::exit_codes;
-use runner::run;
 use lazy_static::lazy_static;
+use runner::run;
 use std::{
     fs::File,
     io,
@@ -15,7 +15,7 @@ use std::{
 };
 
 lazy_static! {
-    static ref HAD_ERROR: AtomicBool = AtomicBool::new(false);
+    pub static ref HAD_ERROR: AtomicBool = AtomicBool::new(false);
 }
 
 pub struct Interpreter {}
@@ -32,7 +32,7 @@ impl Interpreter {
             1 => match self.run_repl() {
                 Ok(_) => exit_codes::EX_OK,
                 Err(e) => {
-                    eprintln!("Gagal saat membaca input atau menuliskan output:\n{:#?}", e);
+                    eprintln!("Gagal saat membaca input atau menuliskan output: {:#?}", e);
                     exit_codes::EX_IOERR
                 }
             },
@@ -44,7 +44,7 @@ impl Interpreter {
                         exit_codes::EX_NOINPUT
                     }
                     _ => {
-                        eprintln!("Terjadi kesalahan saat membaca file:\n{}.", err);
+                        eprintln!("{}", err);
                         exit_codes::EX_IOERR
                     }
                 },
@@ -99,9 +99,7 @@ impl Interpreter {
                 return Err(err);
             }
 
-            if let Err(err) = run(line.as_str()) {
-                return Err(err);
-            }
+            run(line.as_str()).unwrap();
 
             HAD_ERROR.fetch_and(false, Ordering::SeqCst);
             line = "".to_string();
