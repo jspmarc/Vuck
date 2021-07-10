@@ -42,9 +42,6 @@ impl Token {
     pub fn get_tok_type(&self) -> &TokenType {
         &self.tok_type
     }
-    pub fn get_lexeme(&self) -> &String {
-        &self.lexeme
-    }
     pub fn get_literal(&self) -> &Option<i32> {
         &self.literal
     }

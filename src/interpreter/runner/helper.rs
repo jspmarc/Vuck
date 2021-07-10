@@ -14,4 +14,8 @@ impl Runner {
         Interpreter::error(*tok.get_line(), *tok.get_column(), message);
         self.had_error = true;
     }
+
+    pub fn is_at_loop_end(&mut self) -> bool {
+        self.stack[self.ptr_idx as usize] == 0
+    }
 }

@@ -18,6 +18,12 @@ pub struct Scanner {
 
     // stop pas udah nge-scan eof
     has_seen_eof: bool,
+
+    // count loop and conditional. Should be zero at the end of parsing
+    // in_loop: bool,
+    // in_conditional: bool,
+    count_loop: isize,
+    count_conditional: isize,
 }
 
 // const RESERVED_CHARACTERS: &[char] = &[
@@ -35,6 +41,10 @@ impl Scanner {
             line: 1,
             column: 0,
             has_seen_eof: false,
+            // in_loop: false,
+            // in_conditional: false,
+            count_conditional: 0,
+            count_loop: 0,
         }
     }
 }
@@ -50,8 +60,24 @@ impl Scanner {
             };
         }
 
-        if self.is_at_end() && !self.has_seen_eof {
-            Interpreter::error(self.line, self.column, "Membutuhkan :q")
+        if self.is_at_end() {
+            if !self.has_seen_eof {
+                Interpreter::error(self.line, self.column, "Membutuhkan :q")
+            }
+            if self.count_conditional != 0 {
+                Interpreter::error(
+                    self.line,
+                    self.column,
+                    "Ada conditional belum ditutup atau belum dibuka",
+                )
+            }
+            if self.count_loop != 0 {
+                Interpreter::error(
+                    self.line,
+                    self.column,
+                    "Ada loop belum ditutup atau belum dibuka",
+                )
+            }
         }
 
         Ok(self.tokens.as_slice())
@@ -79,21 +105,67 @@ impl Scanner {
             'I' => self.add_token(TokenType::ReadAscii, None),
             'p' => self.add_token(TokenType::WriteNumber, None),
             'P' => self.add_token(TokenType::WriteAscii, None),
-            ',' => self.add_token(TokenType::LoopStart, None),
-            'F' => self.add_token(TokenType::LoopEnd, None),
+            ',' => {
+                // if self.in_loop {
+                //     Interpreter::error(
+                //         self.line,
+                //         self.column,
+                //         "Tidak boleh ada loop di dalam loop",
+                //     );
+                //     return Ok(());
+                // }
+                // self.in_loop = true;
+                self.count_loop += 1;
+                self.add_token(TokenType::LoopStart, None)
+            }
+            'F' => {
+                // if !self.in_loop {
+                //     Interpreter::error(self.line, self.column, "Sedang tidak ada di dalam loop");
+                //     return Ok(());
+                // }
+                // self.in_loop = false;
+                self.count_loop -= 1;
+                self.add_token(TokenType::LoopEnd, None)
+            }
             ':' => {
                 if self.peek() == 'q' {
                     self.advance();
                     self.has_seen_eof = true;
                     self.add_token(TokenType::Eof, None)
                 } else {
-                    Interpreter::error(self.line, self.column, "Karakter/perintah invalid.");
+                    Interpreter::error(self.line, self.column, "Karakter/perintah invalid");
                     Ok(())
                 }
             }
-            '.' => self.add_token(TokenType::ConditionalStart, None),
-            'T' => self.add_token(TokenType::ConditionalEnd, None),
-            '|' => self.add_token(TokenType::ConditionalElse, None),
+            '.' => {
+                // if self.in_conditional {
+                //     Interpreter::error(
+                //         self.line,
+                //         self.column,
+                //         "Tidak boleh ada conditonal di dalam conditional",
+                //     );
+                //     return Ok(());
+                // }
+                // self.in_conditional = true;
+                self.count_conditional += 1;
+                self.add_token(TokenType::ConditionalStart, None)
+            }
+            'T' => {
+                // if !self.in_conditional {
+                //     Interpreter::error(self.line, self.column, "Tidak sedang di dalam conditonal");
+                //     return Ok(());
+                // }
+                // self.in_conditional = false;
+                self.count_conditional -= 1;
+                self.add_token(TokenType::ConditionalEnd, None)
+            }
+            '|' => {
+                if self.count_conditional == 0 {
+                    Interpreter::error(self.line, self.column, "Tidak sedang di dalam conditional");
+                    return Ok(());
+                }
+                self.add_token(TokenType::ConditionalElse, None)
+            }
             ' ' | '\t' | '\r' => Ok(()),
             '\n' => {
                 self.line += 1;

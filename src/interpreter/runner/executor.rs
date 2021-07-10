@@ -1,5 +1,5 @@
-use super::{Runner, Token};
-use std::io;
+use super::{Runner, Token, TokenType};
+use std::{io, usize};
 
 #[allow(unused_macros)]
 macro_rules! read {
@@ -22,13 +22,13 @@ macro_rules! read_str {
 impl Runner {
     pub fn pointer_left(&mut self, tok: &Token) {
         if self.is_stack_empty() {
-            self.error(tok, "Stack kosong")
+            self.error(tok, "Stack kosong atau pointer sudah di bawah stack")
         }
         self.ptr_idx -= 1;
     }
     pub fn pointer_right(&mut self, tok: &Token) {
         if self.is_stack_empty() {
-            self.error(tok, "Stack kosong")
+            self.error(tok, "Stack kosong atau ointer sudah di atas stack")
         }
         self.ptr_idx += 1;
     }
@@ -81,9 +81,9 @@ impl Runner {
             if self.stack.len() < 2 {
                 self.error(tok, "Jumlah operand di stack kurang");
             }
-            let num1 = self.stack.pop().unwrap();
-            let num2 = self.stack.pop().unwrap();
-            (num1, num2)
+            let right = self.stack.pop().unwrap();
+            let left = self.stack.pop().unwrap();
+            (left, right)
         };
 
         let res = match operand {
@@ -96,5 +96,19 @@ impl Runner {
         };
         self.stack.push(res);
         self.reset_pointer();
+    }
+
+    pub fn get_loop_end_idx(&mut self, toks: &[Token], start_idx: usize) -> usize {
+        // cari ujung loopnya dlu di mana
+        let mut i = start_idx;
+        let rest_of_code = &toks[start_idx..];
+        for tok in rest_of_code {
+            i += 1;
+            if *tok.get_tok_type() == TokenType::LoopEnd {
+                break;
+            }
+        }
+
+        i
     }
 }
