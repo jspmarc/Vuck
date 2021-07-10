@@ -66,21 +66,24 @@
 
 ## Used characters
 
-| Character    | Usage |
-| ------------ | ----- |
-| `h`          |       |
-| `j`          |       |
-| `k<number>.` |       |
-| `l`          |       |
-| `:q`         |       |
-| `+`          |       |
-| `-`          |       |
-| `*`          |       |
-| `/`          |       |
-| `%`          |       |
-| `i`          |       |
-| `I`          |       |
-| `p`          |       |
-| `P`          |       |
-| `,<mark>`    |       |
-| `F<mark>`    |       |
+| Character   | Usage                                              | notes                                                        |
+| ----------- | -------------------------------------------------- | ------------------------------------------------------------ |
+| `h`         | move stack pointer left                            | The stack grows to the right (so top == right)               |
+| `j`         | move stack pointer right                           |                                                              |
+| `k<number>` | pushes `<number>` to the stack                     | Puts the pointer at the top of the stack                     |
+| `l`         | pops the top of the stack                          | Puts the pointer the the top of the stack                    |
+| `:q`        | marks the end of the program                       | HAVE TO HAVE THIS                                            |
+| `+`         | adds the first and second value on the stack       | The result is put on top of the stack and resets the pointer |
+| `-`         | subtract the first value by the second value       | The result is put on top of the stack and resets the pointer |
+| `*`         | multiply the first and second value of the stack   | The result is put on top of the stack and resets the pointer |
+| `/`         | divide the first value by the second value         | The result is put on top of the stack and resets the pointer |
+| `%`         | mod of the first value by the second value         | The result is put on top of the stack and resets the pointer |
+| `i`         | read a number and push it onto the stack           | Resets the pointer                                           |
+| `I`         | read a character and push it onto the stack        | Resets the pointer                                           |
+| `p`         | prints the number value of the top of the stack    | Resets the pointer                                           |
+| `P`         | prints the ASCII character of the top of the stack | Resets the pointer                                           |
+| `,`         | the start of a loop block                          |                                                              |
+| `F`         | the end of a loop block                            | goes back to `,` if the top of the stack is not 0            |
+| `.`         | the start of a conditional block                   | skips to `\|` if the top of the stack is not 0               |
+| `T`         | the end of a conditional block                     |                                                              |
+| `\|`        | the else arm of a conditional block                |                                                              |
