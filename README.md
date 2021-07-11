@@ -110,3 +110,6 @@ since experimental features are not used
 
 1. `cargo build --release`
 2. `./target/release/vuck [path/to/.vuck/script]`
+
+## References
+https://craftinginterpreters.com/
