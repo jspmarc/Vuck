@@ -104,16 +104,6 @@ impl Scanner {
                 self.count_loop -= 1;
                 self.add_token(TokenType::LoopEnd, None)
             }
-            ':' => {
-                if self.peek() == 'q' {
-                    self.advance();
-                    self.has_seen_eof = true;
-                    self.add_token(TokenType::Eof, None)
-                } else {
-                    Interpreter::error(self.line, self.column, "Karakter/perintah invalid");
-                    Ok(())
-                }
-            }
             '|' => {
                 self.count_conditional += 1;
                 self.add_token(TokenType::ConditionalStart, None)
@@ -127,6 +117,16 @@ impl Scanner {
                 self.line += 1;
                 self.column = 1;
                 Ok(())
+            }
+            ':' => {
+                if self.peek() == 'q' {
+                    self.advance();
+                    self.has_seen_eof = true;
+                    self.add_token(TokenType::Eof, None)
+                } else {
+                    Interpreter::error(self.line, self.column, "Karakter/perintah invalid");
+                    Ok(())
+                }
             }
             _ => {
                 Interpreter::error(self.line, self.column, "Karakter/perintah invalid");

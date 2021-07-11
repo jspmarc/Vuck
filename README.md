@@ -1,5 +1,7 @@
 # Vuck
 
+## Apa itu Vuck? (Dalam bahasa Inggris)
+
 1. 1D, like brainfuck
 1. The stack's elements are of `signed int` size (4 byte)
 1. The stack's initially empty. Trying to access the stack/do operations on it will cause the
@@ -61,7 +63,7 @@
    T
    ```
 
-## Used characters
+### Rangkuman
 
 | Character   | Usage                                              | notes                                                        |
 | ----------- | -------------------------------------------------- | ------------------------------------------------------------ |
@@ -83,3 +85,7 @@
 | `F`         | the end of a loop block                            | goes back to `,` if the top of the stack is not 0            |
 | `\|`        | the start of a conditional block                   | skips to `T` if the top of the stack is not 0                |
 | `T`         | the end of a conditional block                     |                                                              |
+
+## Pre-requisite
+
+1. Rust

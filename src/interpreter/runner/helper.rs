@@ -15,7 +15,7 @@ impl Runner {
         self.had_error = true;
     }
 
-    pub fn is_at_loop_end(&mut self) -> bool {
+    pub fn is_at_loop_end(&self) -> bool {
         self.stack[self.ptr_idx as usize] == 0
     }
 
@@ -40,16 +40,28 @@ impl Runner {
         i
     }
 
-    pub fn get_else_branch_idx(&mut self, toks: &[Token], start_idx: usize) -> usize {
+    pub fn get_conditional_end_idx(&mut self, toks: &[Token], start_idx: usize) -> usize {
         let mut i = start_idx;
         let rest_of_code = &toks[start_idx..];
+        let mut current_depth = 0;
+
         for tok in rest_of_code {
             i += 1;
             if *tok.get_tok_type() == TokenType::ConditionalEnd {
-                break;
+                if current_depth == 0 {
+                    break;
+                } else {
+                    current_depth -= 1;
+                }
+            } else if *tok.get_tok_type() == TokenType::ConditionalStart {
+                current_depth += 1;
             }
         }
 
         i
+    }
+
+    pub fn should_skip_if(&self) -> bool {
+        self.stack[self.ptr_idx as usize] != 0
     }
 }

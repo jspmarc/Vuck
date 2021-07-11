@@ -28,7 +28,6 @@ pub enum TokenType {
     // conditionals
     ConditionalStart,
     ConditionalEnd,
-    ConditionalElse,
 
     // literal
     Number,

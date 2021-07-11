@@ -89,10 +89,33 @@ impl Runner {
                         return Ok(());
                     }
                 }
-                TokenType::ConditionalStart => println!("Masuk ke conditional"),
-                TokenType::ConditionalElse => println!("Branch else"),
+                TokenType::ConditionalStart => {
+                    if self.is_stack_empty() {
+                        self.error(tok, "Tidak bisa memulai conditional jika stack kosong");
+                        return Ok(());
+                    }
+
+                    // cari akhir di mana
+                    let start_idx = i + 1;
+                    let end_idx = self.get_conditional_end_idx(toks, start_idx);
+
+                    if end_idx < start_idx {
+                        continue;
+                    }
+
+                    if !self.should_skip_if() {
+                        let _ = self.the_actual_runner_lol(&toks[(start_idx - 1)..end_idx]);
+                    }
+
+                    let mut tmp_tok = tok_iter.next().unwrap();
+                    while *tmp_tok.get_tok_type() != TokenType::ConditionalEnd || i != (end_idx - 1)
+                    {
+                        tmp_tok = tok_iter.next().unwrap();
+                        i += 1;
+                    }
+                    i += 1;
+                }
                 TokenType::ConditionalEnd => {
-                    println!("Akhir conditional");
                     return Ok(());
                 }
                 TokenType::Number => self.error(tok, "Kok tiba-tiba angka, mas/mba!"),
