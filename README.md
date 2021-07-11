@@ -53,15 +53,12 @@
 1. Conditionals:
 1. Mark the start of the conditional with:
    ```
-   .
+   |
    ```
 1. Mark the end of the conditional with:
+
    ```
    T
-   ```
-1. Mark the else branch with:
-   ```
-   |
    ```
 
 ## Used characters
@@ -84,6 +81,5 @@
 | `P`         | prints the ASCII character of the top of the stack | Resets the pointer                                           |
 | `,`         | the start of a loop block                          |                                                              |
 | `F`         | the end of a loop block                            | goes back to `,` if the top of the stack is not 0            |
-| `.`         | the start of a conditional block                   | skips to `\|` if the top of the stack is not 0               |
+| `\|`        | the start of a conditional block                   | skips to `T` if the top of the stack is not 0                |
 | `T`         | the end of a conditional block                     |                                                              |
-| `\|`        | the else arm of a conditional block                |                                                              |

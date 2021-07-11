@@ -13,7 +13,6 @@ struct Runner {
     stack: Vec<i32>,
     ptr_idx: i32,
     had_error: bool,
-    count_conditional: isize,
 }
 
 impl Runner {
@@ -92,7 +91,10 @@ impl Runner {
                 }
                 TokenType::ConditionalStart => println!("Masuk ke conditional"),
                 TokenType::ConditionalElse => println!("Branch else"),
-                TokenType::ConditionalEnd => println!("Akhir conditional"),
+                TokenType::ConditionalEnd => {
+                    println!("Akhir conditional");
+                    return Ok(());
+                }
                 TokenType::Number => self.error(tok, "Kok tiba-tiba angka, mas/mba!"),
             }
 
@@ -108,7 +110,6 @@ pub fn run(source: &str) -> io::Result<()> {
         stack: vec![],
         ptr_idx: -1,
         had_error: HAD_ERROR.load(Ordering::SeqCst),
-        count_conditional: 0,
     };
 
     runner.run(source)
