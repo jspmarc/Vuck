@@ -80,6 +80,7 @@ impl Runner {
         let (first, second) = {
             if self.stack.len() < 2 {
                 self.error(tok, "Jumlah operand di stack kurang");
+                return;
             }
             let right = self.stack.pop().unwrap();
             let left = self.stack.pop().unwrap();
@@ -99,12 +100,32 @@ impl Runner {
     }
 
     pub fn get_loop_end_idx(&mut self, toks: &[Token], start_idx: usize) -> usize {
-        // cari ujung loopnya dlu di mana
+        let mut i = start_idx;
+        let rest_of_code = &toks[start_idx..];
+        let mut current_depth = 0;
+
+        for tok in rest_of_code {
+            i += 1;
+            if *tok.get_tok_type() == TokenType::LoopEnd {
+                if current_depth == 0 {
+                    break;
+                } else {
+                    current_depth -= 1;
+                }
+            } else if *tok.get_tok_type() == TokenType::LoopStart {
+                current_depth += 1;
+            }
+        }
+
+        i
+    }
+
+    pub fn get_else_branch_idx(&mut self, toks: &[Token], start_idx: usize) -> usize {
         let mut i = start_idx;
         let rest_of_code = &toks[start_idx..];
         for tok in rest_of_code {
             i += 1;
-            if *tok.get_tok_type() == TokenType::LoopEnd {
+            if *tok.get_tok_type() == TokenType::ConditionalEnd {
                 break;
             }
         }

@@ -13,7 +13,6 @@ struct Runner {
     stack: Vec<i32>,
     ptr_idx: i32,
     had_error: bool,
-    count_loop: isize,
     count_conditional: isize,
 }
 
@@ -32,16 +31,10 @@ impl Runner {
             return Ok(()); // kaborr
         }
 
-        {
-            // println!("Token [");
-            // for (i, tok) in toks.into_iter().enumerate() {
-            //     println!("\t{}: \t{:?}", i, tok);
-            // }
-            // println!("]");
-        }
-
         // run
-        self.the_actual_runner_lol(toks)
+        let _ = self.the_actual_runner_lol(toks);
+
+        Ok(())
     }
 
     fn the_actual_runner_lol(&mut self, toks: &[Token]) -> io::Result<()> {
@@ -75,32 +68,31 @@ impl Runner {
                     }
 
                     // cari akhir di mana
-                    // eksekusi sampe stack-nya 0
                     let start_idx = i + 1;
                     let end_idx = self.get_loop_end_idx(toks, start_idx);
 
-                    self.count_loop += 1;
-
-                    let banyak_muter_nya = self.stack[self.ptr_idx as usize];
-                    for _ in 0..banyak_muter_nya {
+                    // nge-run kode loop
+                    // eksekusi sampe stack-nya 0
+                    while !self.is_at_loop_end() {
                         let _ = self.the_actual_runner_lol(&toks[(start_idx - 1)..end_idx]);
                     }
 
-                    // skip to end
+                    // skip to loop end
                     let mut tmp_tok = tok_iter.next().unwrap();
-                    while *tmp_tok.get_tok_type() != TokenType::LoopEnd {
+                    while *tmp_tok.get_tok_type() != TokenType::LoopEnd || i != (end_idx - 1) {
                         tmp_tok = tok_iter.next().unwrap();
                         i += 1;
                     }
+                    i += 1;
                 }
                 TokenType::LoopEnd => {
-                    if self.count_loop > 0 && self.is_at_loop_end() {
-                        self.count_loop -= 1;
+                    if self.is_at_loop_end() {
+                        return Ok(());
                     }
                 }
-                TokenType::ConditionalStart => todo!(),
-                TokenType::ConditionalEnd => todo!(),
-                TokenType::ConditionalElse => todo!(),
+                TokenType::ConditionalStart => println!("Masuk ke conditional"),
+                TokenType::ConditionalElse => println!("Branch else"),
+                TokenType::ConditionalEnd => println!("Akhir conditional"),
                 TokenType::Number => self.error(tok, "Kok tiba-tiba angka, mas/mba!"),
             }
 
@@ -116,7 +108,6 @@ pub fn run(source: &str) -> io::Result<()> {
         stack: vec![],
         ptr_idx: -1,
         had_error: HAD_ERROR.load(Ordering::SeqCst),
-        count_loop: 0,
         count_conditional: 0,
     };
 
