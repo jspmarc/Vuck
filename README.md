@@ -89,3 +89,24 @@
 ## Pre-requisite
 
 1. Rust
+   - Rustc
+   - Cargo
+
+The program was built and tested on Rust v1.55.0-nightly, but it should work on Rust 2018 stable verison as well
+since experimental features are not used
+
+## Running
+
+### Debug
+
+1. `cargo run [path/to/.vuck/script]`
+
+#### With gdb
+
+1. `cargo build`
+2. `rust-gdb ./target/debug/vuck`
+
+### Production
+
+1. `cargo build --release`
+2. `./target/release/vuck [path/to/.vuck/script]`
