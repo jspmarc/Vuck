@@ -68,9 +68,9 @@
 | Character   | Usage                                              | notes                                                        |
 | ----------- | -------------------------------------------------- | ------------------------------------------------------------ |
 | `h`         | move stack pointer left                            | The stack grows to the right (so top == right)               |
-| `j`         | move stack pointer right                           |                                                              |
+| `l`         | move stack pointer right                           |                                                              |
 | `k<number>` | pushes `<number>` to the stack                     | Puts the pointer at the top of the stack                     |
-| `l`         | pops the top of the stack                          | Puts the pointer the the top of the stack                    |
+| `j`         | pops the top of the stack                          | Puts the pointer the the top of the stack                    |
 | `:q`        | marks the end of the program                       | HAVE TO HAVE THIS                                            |
 | `+`         | adds the first and second value on the stack       | The result is put on top of the stack and resets the pointer |
 | `-`         | subtract the first value by the second value       | The result is put on top of the stack and resets the pointer |
