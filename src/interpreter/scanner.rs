@@ -159,10 +159,7 @@ impl Scanner {
             .cloned()
             .collect::<String>();
 
-        let tok = match Token::new(tok_type, lexeme, literal, self.line, self.column) {
-            Ok(tok) => tok,
-            Err(err) => return Err(err),
-        };
+        let tok = Token::new(tok_type, lexeme, literal, self.line, self.column);
 
         self.tokens.push(tok);
 
